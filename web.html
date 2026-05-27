@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>YánzX | Premium Linktree</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* DARK MODE DEFAULT */
+        body.dark {
+            --bg-overlay: rgba(0, 0, 0, 0.75);
+            --card-bg: rgba(10, 25, 47, 0.85);
+            --text-color: #fff;
+        }
+
+        body.light {
+            --bg-overlay: rgba(255, 255, 255, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #000;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-overlay);
+            z-index: -1;
+            transition: background 0.3s;
+        }
+
+        /* PARTICLES CANVAS */
+        #particlesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* MUSIC & THEME CONTROL */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .ctrl-btn {
+            background: rgba(0, 212, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 212, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* 3D TILT CONTAINER */
+        .tilt {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+        }
+
+        .profile {
+            text-align: center;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00d4ff;
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05) rotate(3deg);
+            box-shadow: 0 0 35px rgba(0, 212, 255, 0.8);
+        }
+
+        /* TYPING ANIMATION */
+        .typing-container {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', monospace;
+            color: #00d4ff;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .typed-text {
+            font-weight: 600;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            margin-left: 2px;
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .name {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #00d4ff, #0077ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+
+        /* BUTTONS */
+        .buttons {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 10px 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50px;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            border-color: #00d4ff;
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+            background: rgba(0, 212, 255, 0.15);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            border: 3px solid #00d4ff;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #00d4ff;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* POPUP NOTIFICATION */
+        .popup {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(0, 212, 255, 0.9);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            z-index: 1001;
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+            cursor: pointer;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        /* AUDIO PLAYER */
+        .playlist-player {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 8px 15px;
+            z-index: 999;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border: 1px solid #00d4ff;
+        }
+
+        .playlist-player button {
+            background: none;
+            border: none;
+            color: #00d4ff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .playlist-player span {
+            color: white;
+            font-size: 0.7rem;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .playlist-player { display: none; }
+            .controls { bottom: 20px; right: 20px; }
+        }
+    </style>
+</head>
+<body class="dark">
+
+    <canvas id="particlesCanvas"></canvas>
+    <div class="overlay"></div>
+
+    <!-- PLAYLIST PLAYER -->
+    <div class="playlist-player">
+        <button id="prevBtn"><i class="fas fa-backward"></i></button>
+        <button id="playPauseBtn"><i class="fas fa-play"></i></button>
+        <button id="nextBtn"><i class="fas fa-forward"></i></button>
+        <span id="songTitle">Loading...</span>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+        <div class="ctrl-btn" id="themeToggle">
+            <i class="fas fa-moon"></i> <span>Dark</span>
+        </div>
+    </div>
+
+    <!-- AUDIO FOR CLICK SOUND -->
+    <audio id="clickSound" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/button-click-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- MAIN AUDIO FOR PLAYLIST -->
+    <audio id="bgMusic" preload="auto"></audio>
+
+    <!-- MODAL QRIS -->
+    <div id="qrisModal" class="modal">
+        <button class="close-modal" id="closeModal">&times;</button>
+        <div class="modal-content">
+            <img src="https://files.catbox.moe/05vg2c.jpg" alt="QRIS Code">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="profile tilt" id="tiltElement">
+            <img src="https://files.catbox.moe/y654pn.png" alt="avatar" class="avatar">
+            <div class="typing-container">
+                <span class="typed-text" id="typedText"></span>
+                <span class="cursor">|</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <div class="btn" id="qrisBtn">
+                <i class="fas fa-qrcode"></i> QRIS ALLPAY
+            </div>
+            <a href="https://t.me/mamang_yz" target="_blank" class="btn">
+                <i class="fab fa-telegram-plane"></i> TELE YANZ
+            </a>
+            <a href="https://wa.me/6285147050230" target="_blank" class="btn">
+                <i class="fab fa-whatsapp"></i> WAWA YANZ
+            </a>
+            <a href="https://t.me/YZZ_testi" target="_blank" class="btn">
+                <i class="fas fa-users"></i> TESTI YANZ
+            </a>
+            <a href="https://whatsapp.com/channel/0029Vb7yGlgJ3juzADGkhk25" target="_blank" class="btn">
+                <i class="fab fa-whatsapp"></i> JOIN SL WA
+            </a>
+            <a href="https://instagram.com/yanz25_p" target="_blank" class="btn">
+                <i class="fab fa-instagram"></i> INSTAGRAM
+            </a>
+            <a href="https://tiktok.com/@yanz_25x" target="_blank" class="btn">
+                <i class="fab fa-tiktok"></i> TIKTOK
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>by <a href="#">@YZZ_BenciBug</a></p>
+        </div>
+    </div>
+
+    <script>
+        // ========== PARTICLES EFFECT ==========
+        const canvas = document.getElementById('particlesCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.color = `rgba(0, ${150 + Math.random() * 105}, 255, ${Math.random() * 0.5})`;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        
+        resizeCanvas();
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initParticles();
+        });
+        
+        // ========== TYPING ANIMATION ==========
+        const texts = [
+            "Welcome cuy! 👋",
+            "Bantu follow ya! 🙏",
+            "YánzX Is Here! 🔥",
+            "Jangan lupa share! 📢"
+        ];
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typedTextSpan = document.getElementById('typedText');
+        
+        function typeEffect() {
+            const currentText = texts[textIndex];
+            if (isDeleting) {
+                typedTextSpan.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typedTextSpan.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            
+            if (!isDeleting && charIndex === currentText.length) {
+                isDeleting = true;
+                setTimeout(typeEffect, 2000);
+                return;
+            }
+            
+            if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                textIndex = (textIndex + 1) % texts.length;
+                setTimeout(typeEffect, 500);
+                return;
+            }
+            
+            const speed = isDeleting ? 50 : 100;
+            setTimeout(typeEffect, speed);
+        }
+        
+        typeEffect();
+        
+        // ========== 3D TILT EFFECT ==========
+        const tiltElement = document.getElementById('tiltElement');
+        tiltElement.addEventListener('mousemove', (e) => {
+            const rect = tiltElement.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 20;
+            const rotateY = (centerX - x) / 20;
+            tiltElement.style.transform = `perspective(500px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        tiltElement.addEventListener('mouseleave', () => {
+            tiltElement.style.transform = 'perspective(500px) rotateX(0deg) rotateY(0deg)';
+        });
+        
+        // ========== CLICK SOUND ==========
+        const clickSound = document.getElementById('clickSound');
+        clickSound.volume = 0.3;
+        
+        function playClickSound() {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(e => console.log('Auto-play blocked'));
+        }
+        
+        // ========== VOICE GREETING ==========
+        function voiceGreeting() {
+            const greeting = new SpeechSynthesisUtterance("Welcome back cuy!");
+            greeting.lang = 'id-ID';
+            greeting.rate = 0.9;
+            speechSynthesis.speak(greeting);
+        }
+        
+        // ========== CUSTOM PLAYLIST ==========
+        const playlist = [
+            { title: "Song 1 - LoFi Beat", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { title: "Song 2 - Chill Vibes", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { title: "Song 3 - Relaxing", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
+        ];
+        let currentSong = 0;
+        const audio = document.getElementById('bgMusic');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const songTitleSpan = document.getElementById('songTitle');
+        
+        function loadSong(index) {
+            audio.src = playlist[index].url;
+            songTitleSpan.textContent = playlist[index].title;
+            audio.load();
+            audio.play().catch(e => console.log('Auto-play blocked'));
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+        
+        playPauseBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audio.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            currentSong = (currentSong + 1) % playlist.length;
+            loadSong(currentSong);
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            currentSong = (currentSong - 1 + playlist.length) % playlist.length;
+            loadSong(currentSong);
+        });
+        
+        audio.addEventListener('ended', () => {
+            currentSong = (currentSong + 1) % playlist.length;
+            loadSong(currentSong);
+        });
+        
+        loadSong(0);
+        
+        // ========== POPUP NOTIFICATION ==========
+        function showPopup(message) {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.innerHTML = `<i class="fas fa-bell"></i> ${message}`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 3500);
+            popup.onclick = () => popup.remove();
+        }
+        
+        // ========== DARK/LIGHT MODE ==========
+        const themeToggle = document.getElementById('themeToggle');
+        let isDark = true;
+        
+        themeToggle.addEventListener('click', () => {
+            if (isDark) {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> <span>Light</span>';
+                isDark = false;
+                showPopup('☀️ Light Mode Activated');
+            } else {
+                document.body.classList.remove('light');
+                document.body.classList.add('dark');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> <span>Dark</span>';
+                isDark = true;
+                showPopup('🌙 Dark Mode Activated');
+            }
+        });
+        
+        // ========== QRIS MODAL ==========
+        const qrisModal = document.getElementById('qrisModal');
+        const qrisBtn = document.getElementById('qrisBtn');
+        const closeModal = document.getElementById('closeModal');
+        
+        qrisBtn.addEventListener('click', () => {
+            qrisModal.style.display = 'flex';
+            playClickSound();
+            if (navigator.vibrate) navigator.vibrate(50);
+        });
+        
+        closeModal.addEventListener('click', () => qrisModal.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === qrisModal) qrisModal.style.display = 'none';
+        });
+        
+        // ========== APPLY SOUND & POPUP TO ALL BUTTONS ==========
+        const allBtns = document.querySelectorAll('.btn');
+        allBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                playClickSound();
+                if (navigator.vibrate) navigator.vibrate(30);
+                
+                // RIPPLE EFFECT
+                let ripple = document.createElement('span');
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                ripple.style.cssText = `
+                    position: absolute; left: ${x}px; top: ${y}px;
+                    width: 0px; height: 0px; border-radius: 50%;
+                    background: rgba(0,212,255,0.7); transform: translate(-50%,-50%);
+                    animation: rippleAnim 0.6s linear; pointer-events: none;
+                `;
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `@keyframes rippleAnim { 0% { width: 0px; height: 0px; opacity: 0.6; } 100% { width: 350px; height: 350px; opacity: 0; } } .btn { position: relative; overflow: hidden; }`;
+        document.head.appendChild(rippleStyle);
+        
+        // ========== SCROLL REVEAL ==========
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.style.opacity = '1';
+                    e.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.btn').forEach((btn, i) => {
+            btn.style.opacity = '0';
+            btn.style.transform = 'translateY(25px)';
+            btn.style.transition = `opacity 0.5s ease ${i*0.08}s, transform 0.5s ease ${i*0.08}s`;
+            observer.observe(btn);
+        });
+        
+        document.querySelector('.profile').style.opacity = '0';
+        document.querySelector('.profile').style.transform = 'translateY(-25px)';
+        document.querySelector('.profile').style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+        observer.observe(document.querySelector('.profile'));
+        
+        document.querySelector('.footer').style.opacity = '0';
+        document.querySelector('.footer').style.transform = 'translateY(25px)';
+        document.querySelector('.footer').style.transition = 'opacity 0.7s ease 0.4s, transform 0.7s ease 0.4s';
+        observer.observe(document.querySelector('.footer'));
+        
+        // ========== INITIAL POPUP & VOICE ==========
+        setTimeout(() => {
+            showPopup('🔥 Selamat datang di YánzX! Follow dulu ya!');
+            voiceGreeting();
+        }, 1000);
+    </script>
+</body>
+</html>
